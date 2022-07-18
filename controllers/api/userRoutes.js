@@ -4,7 +4,7 @@ const { Users } = require('../../models');
 // CREATE new user
 router.post('/', async (req, res) => {
   try {
-    const dbUserData = await Users.create({
+    const userNew = await Users.create({
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
@@ -12,32 +12,32 @@ router.post('/', async (req, res) => {
 
     req.session.save(() => {
       req.session.loggedIn = true;
-      req.session.userId = dbUserData.dataValues.id;
-      res.status(200).json(dbUserData);
+      req.session.userId = userNew.dataValues.id;
+      res.status(200).json(userNew);
     });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
   }
 });
 
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const dbUserData = await Users.findOne({
+    const user = await Users.findOne({
       where: {
         email: req.body.email,
       },
     });
 
-    if (!dbUserData) {
+    if (!user) {
       res
         .status(400)
         .json({ message: 'Incorrect email or password. Please try again!' });
       return;
     }
 
-    const validPassword = await dbUserData.checkPassword(req.body.password);
+    const validPassword = await user.checkPassword(req.body.password);
 
     if (!validPassword) {
       res
@@ -48,17 +48,17 @@ router.post('/login', async (req, res) => {
 
     req.session.save(() => {
       req.session.loggedIn = true;
-      req.session.userId = dbUserData.dataValues.id;
-      console.log(dbUserData.dataValues.id)
+      req.session.userId = user.dataValues.id;
+      console.log(user.dataValues.id)
       console.log(req.session.cookie);
 
       res
         .status(200)
-        .json({ user: dbUserData, message: 'You are now logged in!' });
+        .json({ user: user, message: 'You are now logged in!' });
     });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
   }
 });
 
